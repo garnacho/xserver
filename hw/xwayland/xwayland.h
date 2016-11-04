@@ -200,6 +200,7 @@ struct xwl_tablet_tool {
     struct xwl_seat *seat;
 
     DeviceIntPtr xdevice;
+    uint32_t proximity_in_serial;
     uint32_t x;
     uint32_t y;
     float pressure;
@@ -207,6 +208,8 @@ struct xwl_tablet_tool {
     float tilt_y;
     float rotation;
     float slider;
+
+    struct xwl_cursor cursor;
 };
 
 struct xwl_tablet_pad {
@@ -234,6 +237,7 @@ Bool xwl_screen_init_cursor(struct xwl_screen *xwl_screen);
 
 struct xwl_screen *xwl_screen_get(ScreenPtr screen);
 
+void xwl_tablet_tool_set_cursor(struct xwl_tablet_tool *tool);
 void xwl_seat_set_cursor(struct xwl_seat *xwl_seat);
 
 void xwl_seat_destroy(struct xwl_seat *xwl_seat);

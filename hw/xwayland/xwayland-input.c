@@ -1391,6 +1391,7 @@ tablet_tool_receive_removed(void *data, struct zwp_tablet_tool_v2 *tool)
     struct xwl_tablet_tool *xwl_tablet_tool = data;
 
     xorg_list_del(&xwl_tablet_tool->link);
+    xwl_cursor_release(&xwl_tablet_tool->cursor);
     zwp_tablet_tool_v2_destroy(tool);
     free(xwl_tablet_tool);
 }
@@ -1403,8 +1404,12 @@ tablet_tool_proximity_in(void *data, struct zwp_tablet_tool_v2 *tool,
     struct xwl_tablet_tool *xwl_tablet_tool = data;
     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
 
+    xwl_tablet_tool->proximity_in_serial = serial;
+
     //FIXME: Do we need the same NULL check used by the pointer?
     xwl_seat->focus_window = wl_surface_get_user_data(wl_surface);
+
+    xwl_tablet_tool_set_cursor(xwl_tablet_tool);
 }
 
 static void
@@ -1413,6 +1418,7 @@ tablet_tool_proximity_out(void *data, struct zwp_tablet_tool_v2 *tool)
     struct xwl_tablet_tool *xwl_tablet_tool = data;
     struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
 
+    xwl_tablet_tool->proximity_in_serial = 0;
     xwl_seat->focus_window = NULL;
 }
 
@@ -1664,10 +1670,20 @@ tablet_seat_handle_add_tablet(void *data, struct zwp_tablet_seat_v2 *tablet_seat
 }
 
 static void
+xwl_tablet_tool_update_cursor(struct xwl_cursor *xwl_cursor)
+{
+    struct xwl_tablet_tool *xwl_tablet_tool = wl_container_of(xwl_cursor,
+                                                              xwl_tablet_tool,
+                                                              cursor);
+    xwl_tablet_tool_set_cursor(xwl_tablet_tool);
+}
+
+static void
 tablet_seat_handle_add_tool(void *data, struct zwp_tablet_seat_v2 *tablet_seat,
                             struct zwp_tablet_tool_v2 *tool)
 {
     struct xwl_seat *xwl_seat = data;
+    struct xwl_screen *xwl_screen = xwl_seat->xwl_screen;
     struct xwl_tablet_tool *xwl_tablet_tool;
 
     xwl_tablet_tool = calloc(sizeof *xwl_tablet_tool, 1);
@@ -1677,6 +1693,8 @@ tablet_seat_handle_add_tool(void *data, struct zwp_tablet_seat_v2 *tablet_seat,
     }
     xwl_tablet_tool->tool = tool;
     xwl_tablet_tool->seat = xwl_seat;
+    xwl_cursor_init(&xwl_tablet_tool->cursor, xwl_screen,
+                    xwl_tablet_tool_update_cursor);
 
     xorg_list_add(&xwl_tablet_tool->link, &xwl_seat->tablet_tools);
 
