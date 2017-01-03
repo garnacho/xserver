@@ -168,7 +168,7 @@ xwl_seat_set_cursor(struct xwl_seat *xwl_seat)
 void
 xwl_tablet_tool_set_cursor(struct xwl_tablet_tool *xwl_tablet_tool)
 {
-    struct xwl_seat *xwl_seat = xwl_tablet_tool->xwl_seat;
+    struct xwl_seat *xwl_seat = xwl_tablet_tool->seat;
     struct xwl_cursor *xwl_cursor = &xwl_tablet_tool->cursor;
     PixmapPtr pixmap;
     CursorPtr cursor;

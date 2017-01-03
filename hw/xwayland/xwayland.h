@@ -44,6 +44,7 @@
 
 #include "relative-pointer-unstable-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "tablet-unstable-v2-client-protocol.h"
 
 struct xwl_screen {
     int width;
